@@ -103,6 +103,36 @@ request.onerror=function(){
     alert("Database Error");
 
 };
+    document.getElementById("syncBtn").onclick = syncGuests;
+
+async function syncGuests(){
+
+    document.getElementById("status").innerHTML="در حال دریافت مهمان‌ها...";
+
+    const response = await fetch(API);
+
+    const guests = await response.json();
+
+    const tx = db.transaction("guests","readwrite");
+
+    const store = tx.objectStore("guests");
+
+    store.clear();
+
+    guests.forEach(g=>{
+
+        store.put(g);
+
+    });
+
+    tx.oncomplete=function(){
+
+        document.getElementById("status").innerHTML =
+        "✅ "+guests.length+" مهمان ذخیره شد";
+
+    };
+
+}
 
 </script>
 
