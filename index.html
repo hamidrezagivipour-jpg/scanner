@@ -249,120 +249,85 @@ function findGuest(token) {
     });
 
 }
-    const API = "https://script.google.com/macros/s/AKfycbx5XHMA1Co2SLX9oGgQTwuaiDzCue8fJsFiQyvJGagdtkk_LzSOHoeNe70ddeF6vBJgfw/exec";
+    // ---------- QR Scanner ----------
 
-let db;
-let scanner = null;
+document.getElementById("scanBtn").onclick = startScanner;
 
-// ---------- IndexedDB ----------
-
-const request = indexedDB.open("GuestDB", 1);
-
-request.onupgradeneeded = function (e) {
-
-    db = e.target.result;
-
-    if (!db.objectStoreNames.contains("guests")) {
-
-        db.createObjectStore("guests", {
-            keyPath: "token"
-        });
-
-    }
-
-};
-
-request.onsuccess = function (e) {
-
-    db = e.target.result;
-
-    setStatus("Ready");
-
-};
-
-request.onerror = function () {
-
-    alert("Database Error");
-
-};
-
-// ---------- Status ----------
-
-function setStatus(text, cls = "info") {
-
-    const s = document.getElementById("status");
-
-    s.className = cls;
-
-    s.innerHTML = text;
-
-}
-
-// ---------- Sync ----------
-
-document.getElementById("syncBtn").onclick = syncGuests;
-
-async function syncGuests() {
+async function startScanner() {
 
     if (!db) {
-        alert("دیتابیس هنوز آماده نشده است.");
+        alert("ابتدا Sync را انجام بده.");
         return;
     }
 
-    setStatus("در حال دریافت مهمان‌ها...");
+    if (scanner) {
+        return;
+    }
+
+    scanner = new Html5Qrcode("reader");
 
     try {
 
-        const response = await fetch(API + "?page=guests");
+        await scanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: 250
+            },
+            async function(decodedText) {
 
-        const guests = await response.json();
+                await scanner.stop();
+                scanner = null;
 
-        const tx = db.transaction("guests", "readwrite");
+                let token = decodedText;
 
-        const store = tx.objectStore("guests");
+                // اگر QR لینک کامل بود، فقط token را استخراج کن
+                if (decodedText.includes("token=")) {
+                    token = decodedText.split("token=")[1].split("&")[0];
+                }
 
-        store.clear();
+                const guest = await findGuest(token);
 
-        guests.forEach(function (g) {
-            store.put(g);
-        });
+                if (guest) {
 
-        tx.oncomplete = function () {
+                    setStatus("✅ " + guest.name, "success");
 
-            setStatus("✅ " + guests.length + " مهمان ذخیره شد", "success");
+                    alert(
+                        "نام: " + guest.name +
+                        "\nوضعیت: " + (guest.status || "معتبر")
+                    );
 
-        };
+                    // مرحله بعد اینجا ثبت ورود و ارسال به Apps Script اضافه می‌شود.
+
+                } else {
+
+                    setStatus("❌ مهمان پیدا نشد", "error");
+
+                    alert("این QR در دیتابیس پیدا نشد.");
+
+                }
+
+            },
+            function(errorMessage) {
+                // خطاهای لحظه‌ای اسکن نادیده گرفته می‌شوند.
+            }
+        );
 
     } catch (err) {
 
         console.error(err);
 
-        setStatus("❌ خطا در Sync", "error");
+        scanner = null;
+
+        setStatus("❌ دسترسی به دوربین امکان‌پذیر نیست", "error");
+
+        alert("دوربین باز نشد. اگر آیفون استفاده می‌کنی، اجازه Camera را برای مرورگر فعال کن.");
 
     }
 
 }
 
-// ---------- Find Guest ----------
+</script>
 
-function findGuest(token) {
-
-    return new Promise(function (resolve, reject) {
-
-        const tx = db.transaction("guests", "readonly");
-
-        const store = tx.objectStore("guests");
-
-        const req = store.get(token);
-
-        req.onsuccess = function () {
-            resolve(req.result);
-        };
-
-        req.onerror = function () {
-            reject();
-        };
-
-    });
-
-}
+</body>
+</html>
