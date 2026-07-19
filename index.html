@@ -294,8 +294,34 @@ function markGuestUsed(token) {
 
 }
     // ---------- QR Scanner ----------
+// ---------- Add To Queue ----------
 
-document.getElementById("scanBtn").onclick = startScanner;
+function addToQueue(token) {
+
+    return new Promise(function(resolve, reject) {
+
+        const tx = db.transaction("pendingCheckins", "readwrite");
+
+        const store = tx.objectStore("pendingCheckins");
+
+        store.add({
+            token: token,
+            time: Date.now()
+        });
+
+        tx.oncomplete = function() {
+            resolve();
+        };
+
+        tx.onerror = function() {
+            reject();
+        };
+
+    });
+
+}
+
+    document.getElementById("scanBtn").onclick = startScanner;
 
 async function startScanner() {
 
