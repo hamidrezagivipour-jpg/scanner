@@ -249,6 +249,42 @@ function findGuest(token) {
     });
 
 }
+    // ---------- Mark Guest Used ----------
+
+function markGuestUsed(token) {
+
+    return new Promise(function(resolve, reject) {
+
+        const tx = db.transaction("guests", "readwrite");
+
+        const store = tx.objectStore("guests");
+
+        const req = store.get(token);
+
+        req.onsuccess = function() {
+
+            const guest = req.result;
+
+            if (!guest) {
+                resolve(false);
+                return;
+            }
+
+            guest.status = "Used";
+
+            store.put(guest);
+
+            resolve(true);
+
+        };
+
+        req.onerror = function() {
+            reject();
+        };
+
+    });
+
+}
     // ---------- QR Scanner ----------
 
 document.getElementById("scanBtn").onclick = startScanner;
@@ -290,6 +326,15 @@ async function startScanner() {
 
 if (guest) {
 
+    if (guest.status == "Used") {
+
+    setStatus("❌ این بلیت قبلاً استفاده شده", "error");
+    alert("❌ این بلیت قبلاً استفاده شده است.");
+
+    return;
+
+}
+
     setStatus("در حال بررسی...", "info");
 
     const response = await fetch(
@@ -300,8 +345,10 @@ if (guest) {
 
     if (result == "success") {
 
-        setStatus("✅ ورود موفق - " + guest.name, "success");
-        alert("✅ ورود موفق\n\n" + guest.name);
+    setStatus("✅ ورود موفق - " + guest.name, "success");
+
+await markGuestUsed(token);
+    alert("✅ ورود موفق\n\n" + guest.name);
 
     } else if (result == "used") {
 
