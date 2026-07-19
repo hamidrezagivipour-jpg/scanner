@@ -335,32 +335,40 @@ if (guest) {
 
 }
 
-    setStatus("در حال بررسی...", "info");
+ if (guest) {
 
-    const response = await fetch(
-        API + "?page=apiCheckin&token=" + encodeURIComponent(token)
-    );
-
-    const result = await response.text();
-
-    if (result == "success") {
-
-    setStatus("✅ ورود موفق - " + guest.name, "success");
-
-await markGuestUsed(token);
-    alert("✅ ورود موفق\n\n" + guest.name);
-
-    } else if (result == "used") {
+    if (guest.status == "Used") {
 
         setStatus("❌ این بلیت قبلاً استفاده شده", "error");
         alert("❌ این بلیت قبلاً استفاده شده است.");
 
-    } else {
-
-        setStatus("❌ QR نامعتبر", "error");
-        alert("❌ QR نامعتبر است.");
+        return;
 
     }
+
+    setStatus("✅ ورود موفق - " + guest.name, "success");
+
+    await markGuestUsed(token);
+
+    alert("✅ ورود موفق\n\n" + guest.name);
+
+    // ارسال به Apps Script در پس‌زمینه
+    fetch(
+        API + "?page=apiCheckin&token=" + encodeURIComponent(token)
+    )
+    .then(function(response) {
+        return response.text();
+    })
+    .then(function(result) {
+
+        if (result !== "success") {
+            console.error("Server:", result);
+        }
+
+    })
+    .catch(function(err) {
+        console.error(err);
+    });
 
 } else {
 
@@ -369,7 +377,6 @@ await markGuestUsed(token);
     alert("این QR در دیتابیس پیدا نشد.");
 
 }
-
             },
             function(errorMessage) {
                 // خطاهای لحظه‌ای اسکن نادیده گرفته می‌شوند.
