@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="fa">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Scanner</title>
 
@@ -13,26 +14,38 @@
 
 body{
     font-family:tahoma;
+    background:#f4f4f4;
     text-align:center;
-    background:#f5f5f5;
     padding:20px;
 }
 
 button{
-    padding:12px 20px;
+
+    width:250px;
+    height:55px;
+
     font-size:18px;
+
     margin:8px;
+
 }
 
 #reader{
+
     width:320px;
+
     margin:20px auto;
+
 }
 
 #status{
+
     margin-top:20px;
+
     font-size:18px;
+
     font-weight:bold;
+
 }
 
 </style>
@@ -41,13 +54,15 @@ button{
 
 <body>
 
-<h2>Scanner</h2>
+<h2>Scanner V2</h2>
 
-<button>
+<button id="syncBtn">
 🔄 Sync Guests
 </button>
 
-<button>
+<br>
+
+<button id="scanBtn">
 📷 Start Scanner
 </button>
 
@@ -57,5 +72,40 @@ button{
 Ready
 </div>
 
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbx5XHMA1Co2SLX9oGgQTwuaiDzCue8fJsFiQyvJGagdtkk_LzSOHoeNe70ddeF6vBJgfw/exec";
+
+let db;
+
+const request=indexedDB.open("GuestDB",1);
+
+request.onupgradeneeded=function(e){
+
+    db=e.target.result;
+
+    db.createObjectStore("guests",{
+
+        keyPath:"token"
+
+    });
+
+};
+
+request.onsuccess=function(e){
+
+    db=e.target.result;
+
+};
+
+request.onerror=function(){
+
+    alert("Database Error");
+
+};
+
+</script>
+
 </body>
+
 </html>
