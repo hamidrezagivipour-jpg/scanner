@@ -103,20 +103,15 @@ request.onerror=function(){
     alert("Database Error");
 
 };
-    document.getElementById("syncBtn").onclick = syncGuests;
+   document.getElementById("syncBtn").onclick = syncGuests;
 
 async function syncGuests(){
 
     alert("Sync شروع شد");
 
-    document.getElementById("status").innerHTML="در حال دریافت مهمان‌ها...";
+    document.getElementById("status").innerHTML = "در حال دریافت مهمان‌ها...";
 
-    ...
-}
-
-    document.getElementById("status").innerHTML="در حال دریافت مهمان‌ها...";
-
-    const response = await fetch(API);
+    const response = await fetch(API + "?page=guests");
 
     const guests = await response.json();
 
@@ -126,21 +121,18 @@ async function syncGuests(){
 
     store.clear();
 
-    guests.forEach(g=>{
-
+    guests.forEach(function(g){
         store.put(g);
-
     });
 
-    tx.oncomplete=function(){
+    tx.oncomplete = function(){
 
         document.getElementById("status").innerHTML =
-        "✅ "+guests.length+" مهمان ذخیره شد";
+        "✅ " + guests.length + " مهمان ذخیره شد";
 
     };
 
 }
-
 </script>
 
 </body>
