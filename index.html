@@ -139,7 +139,7 @@ let scanner = null;
 
 // ---------- IndexedDB ----------
 
-const request = indexedDB.open("GuestDB", 1);
+const request = indexedDB.open("GuestDB", 2);
 
 request.onupgradeneeded = function (e) {
 
@@ -149,6 +149,14 @@ request.onupgradeneeded = function (e) {
 
         db.createObjectStore("guests", {
             keyPath: "token"
+        });
+
+    }
+
+    if (!db.objectStoreNames.contains("pendingCheckins")) {
+
+        db.createObjectStore("pendingCheckins", {
+            autoIncrement: true
         });
 
     }
