@@ -286,26 +286,42 @@ async function startScanner() {
                     token = decodedText.split("token=")[1].split("&")[0];
                 }
 
-                const guest = await findGuest(token);
+           const guest = await findGuest(token);
 
-                if (guest) {
+if (guest) {
 
-                    setStatus("✅ " + guest.name, "success");
+    setStatus("در حال بررسی...", "info");
 
-                    alert(
-                        "نام: " + guest.name +
-                        "\nوضعیت: " + (guest.status || "معتبر")
-                    );
+    const response = await fetch(
+        API + "?page=apiCheckin&token=" + encodeURIComponent(token)
+    );
 
-                    // مرحله بعد اینجا ثبت ورود و ارسال به Apps Script اضافه می‌شود.
+    const result = await response.text();
 
-                } else {
+    if (result == "success") {
 
-                    setStatus("❌ مهمان پیدا نشد", "error");
+        setStatus("✅ ورود موفق - " + guest.name, "success");
+        alert("✅ ورود موفق\n\n" + guest.name);
 
-                    alert("این QR در دیتابیس پیدا نشد.");
+    } else if (result == "used") {
 
-                }
+        setStatus("❌ این بلیت قبلاً استفاده شده", "error");
+        alert("❌ این بلیت قبلاً استفاده شده است.");
+
+    } else {
+
+        setStatus("❌ QR نامعتبر", "error");
+        alert("❌ QR نامعتبر است.");
+
+    }
+
+} else {
+
+    setStatus("❌ مهمان پیدا نشد", "error");
+
+    alert("این QR در دیتابیس پیدا نشد.");
+
+}
 
             },
             function(errorMessage) {
