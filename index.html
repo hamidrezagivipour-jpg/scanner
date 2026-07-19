@@ -107,6 +107,13 @@ request.onerror=function(){
 
 async function syncGuests(){
 
+    alert("Sync شروع شد");
+
+    document.getElementById("status").innerHTML="در حال دریافت مهمان‌ها...";
+
+    ...
+}
+
     document.getElementById("status").innerHTML="در حال دریافت مهمان‌ها...";
 
     const response = await fetch(API);
