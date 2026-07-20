@@ -139,7 +139,7 @@ let scanner = null;
 
 // ---------- IndexedDB ----------
 
-const request = indexedDB.open("GuestDB", 2);
+const request = indexedDB.open("GuestDB", 1);
 
 request.onupgradeneeded = function (e) {
 
@@ -149,14 +149,6 @@ request.onupgradeneeded = function (e) {
 
         db.createObjectStore("guests", {
             keyPath: "token"
-        });
-
-    }
-
-    if (!db.objectStoreNames.contains("pendingCheckins")) {
-
-        db.createObjectStore("pendingCheckins", {
-            autoIncrement: true
         });
 
     }
@@ -294,34 +286,8 @@ function markGuestUsed(token) {
 
 }
     // ---------- QR Scanner ----------
-// ---------- Add To Queue ----------
 
-function addToQueue(token) {
-
-    return new Promise(function(resolve, reject) {
-
-        const tx = db.transaction("pendingCheckins", "readwrite");
-
-        const store = tx.objectStore("pendingCheckins");
-
-        store.add({
-            token: token,
-            time: Date.now()
-        });
-
-        tx.oncomplete = function() {
-            resolve();
-        };
-
-        tx.onerror = function() {
-            reject();
-        };
-
-    });
-
-}
-
-    document.getElementById("scanBtn").onclick = startScanner;
+document.getElementById("scanBtn").onclick = startScanner;
 
 async function startScanner() {
 
